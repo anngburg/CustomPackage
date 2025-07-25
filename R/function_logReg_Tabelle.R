@@ -39,9 +39,6 @@ function_logReg_Tabelle <- function(model, data, dv) {
 
     predictedKontakt <- ifelse(prob_logReg > 0.5, 1, 0)
     actualKontakt <- data[[dv]]
-    if (is.na(actualKontakt)) {
-        stop("The dv wasn't properly passed to the function.")
-    }
 
     conf_matrix <- caret::confusionMatrix(as.factor(predictedKontakt), as.factor(actualKontakt))
     Sensitivität <- conf_matrix$byClass["Sensitivity"]
