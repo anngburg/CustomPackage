@@ -27,9 +27,8 @@ function_logReg_Tabelle <- function(model, data, dv) {
 
     prob_logReg <- stats::predict(model, type = "response")
     roc_curve <- pROC::roc(data[[dv]], prob_logReg) #ROC Kurve berechnen
-    if (is.na(roc_curve)) {
-        stop("The dataframe or the dv wasn't properly passed to the function.")
-    }
+
+
     auc_value <- pROC::auc(roc_curve) #AUC Wert extrahieren
     auc_CI <- as.data.frame(pROC::ci.auc(roc_curve)) %>% dplyr::mutate_if(is.numeric, round, digits = 2)
     auc_CIlower <- auc_CI[1, ]
