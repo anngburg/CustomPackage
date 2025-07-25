@@ -1,5 +1,5 @@
 
-function_logReg_Tabelle <- function(model, DV) {
+function_logReg_Tabelle <- function(model, data, dv) {
     logReg_fit <- stats::anova(model, test = "Chisq")
 
     lr.chi <- model$null.deviance - model$deviance
@@ -26,7 +26,10 @@ function_logReg_Tabelle <- function(model, DV) {
     Tabelle_logReg <- dplyr::select(Tabelle_logReg, c(`Odds Ratios`, `Beta-Gewichte`, `95%iges KI`, Standardfehler, Estimate, `z-Statistik`, `Chi² (Wald)`, `p-Wert`,))
 
     prob_logReg <- stats::predict(model, type = "response")
-    roc_curve <- pROC::roc(DV, prob_logReg) #ROC Kurve berechnen
+    roc_curve <- pROC::roc(data[[dv]], prob_logReg) #ROC Kurve berechnen
+    if (is.na(roc_curve)) {
+        stop("The dataframe or the dv wasn't properly passed to the function.")
+    }
     auc_value <- pROC::auc(roc_curve) #AUC Wert extrahieren
     auc_CI <- as.data.frame(pROC::ci.auc(roc_curve)) %>% dplyr::mutate_if(is.numeric, round, digits = 2)
     auc_CIlower <- auc_CI[1, ]
@@ -35,7 +38,11 @@ function_logReg_Tabelle <- function(model, DV) {
     print(auc_value)
 
     predictedKontakt <- ifelse(prob_logReg > 0.5, 1, 0)
-    actualKontakt <- DV
+    actualKontakt <- data[[dv]]
+    if (is.na(actualKontakt)) {
+        stop("The dv wasn't properly passed to the function.")
+    }
+
     conf_matrix <- caret::confusionMatrix(as.factor(predictedKontakt), as.factor(actualKontakt))
     Sensitivität <- conf_matrix$byClass["Sensitivity"]
     Spezifität <- conf_matrix$byClass["Specificity"]
